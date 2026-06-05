@@ -76,9 +76,13 @@ app.get("/:username", async(c) => {
 app.get("/:username/articles/:slug", async(c) => {
   const { username, slug } = c.req.param()
   const article = await client.getArticle(slug)
+  const body = article.article.body_html.replace(
+    /(<iframe\b[^>]*?)\ssrc="https:\/\/embed\.zenn\.studio\/[^"]*"([^>]*?\sdata-content="https%3A%2F%2Ftwitter\.com%2F([^%"]+)%2Fstatus%2F(\d+)"[^>]*>)/g,
+    '$1 src="https://nitter.net/$3/status/$4/embed"$2'
+  )
   return c.render(<>
     <h1>{article.article.emoji}|{article.article.title}</h1>
-    <div dangerouslySetInnerHTML={{ __html: article.article.body_html }} class="znc" />
+    <div dangerouslySetInnerHTML={{ __html: body }} class="znc" />
     <div class="metas">
       <p>Published at: {new Date(article.article.published_at).toLocaleString()}</p>
       <p>Likes: {article.article.liked_count}</p>
