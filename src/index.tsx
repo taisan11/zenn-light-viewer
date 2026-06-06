@@ -31,7 +31,7 @@ app.use(jsxRenderer(({ children }) => {
       <head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zenn-content-css@latest/lib/index.css" />
         <style>{mainCSS}</style>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
       </head>
       <body>{children}</body>
     </html>
