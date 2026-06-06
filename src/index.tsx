@@ -11,7 +11,7 @@ const app = new Hono()
 const client = new ZennClient()
 
 const mainCSS = `
-  @media(orientation: portrait) {
+  @media(orientation: landscape) {
     body {
       max-width: 80%;
     }
