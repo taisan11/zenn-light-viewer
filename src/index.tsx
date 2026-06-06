@@ -5,31 +5,52 @@ import { cache } from "hono/cache"
 import { etag } from "hono/etag"
 import { jsxRenderer } from "hono/jsx-renderer"
 import { secureHeaders } from "hono/secure-headers"
-import {css,Style} from "hono/css"
 
 const app = new Hono()
 const client = new ZennClient()
 
+// 上が縦画面で下が横画面
 const mainCSS = `
-  @media(orientation: landscape) {
-    body {
-      max-width: 80%;
-    }
+  @media(orientation: portrait) {
     .metas {
       font-size: 0.8em;
     }
   }
+  @media(orientation: landscape) {
+    body {
+      margin: 0 30vw;
+    }
+  }
+  body {
+    font-size:105%;
+    margin-bottom: 5em;
+    word-break: auto-phrase;
+    text-wrap: pretty;
+  }
+  .metas {
+    border: 3px solid gray;
+    padding: 1em;
+    * {
+      margin:0;
+      padding:0
+    }
+  }
+  #a-title {
+    margin-top: 0;
+    font-size: 1.3em;
+  }
 `
 
-app.use(bodyLimit({ maxSize: 1024 * 512 })) // 512KB limit
-// app.use(cache({ cacheName:"zlv",cacheControl:"public, max-age=36000" }))
-// app.use(etag({weak: true}))
+// app.use(bodyLimit({ maxSize: 1024 * 512 })) // 512KB limit
+app.use(cache({ cacheName:"zlv",cacheControl:"public, max-age=36000" }))
+app.use(etag({weak: true}))
 app.use(secureHeaders({}))
 app.use(jsxRenderer(({ children }) => {
   return (
     <html>
       <head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zenn-content-css@latest/lib/index.css" />
+        <script src="/ae.js"/>
         <style>{mainCSS}</style>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
       </head>
@@ -82,15 +103,14 @@ app.get("/:username/articles/:slug", async(c) => {
     '$1 src="https://nitter.net/$3/status/$4/embed"$2'
   )
   return c.render(<>
-    <h1>{article.article.emoji}|{article.article.title}</h1>
+    <h1 id="a-title">{article.article.emoji}|{article.article.title}</h1>
     <div dangerouslySetInnerHTML={{ __html: body }} class="znc" />
     <div class="metas">
-      <p>Published at: {new Date(article.article.published_at).toLocaleString()}</p>
-      <p>Likes: {article.article.liked_count}</p>
-      <p>Comments: {article.article.comments_count}</p>
-      {article.article.publication ? <><p>Publication: <a href={"/p/" + article.article.publication.name}>{article.article.publication.name}</a></p></> : null}
-      <a href={`/${article.article.user.username}`}>{article.article.user.username}</a><br/>
-      <a href={"https://zenn.dev/"+username+"/articles/"+slug}>View on Zenn</a>
+      <p>投稿日: {new Date(article.article.published_at).toLocaleString("ja-JP")}</p>
+      <p>好き数: {article.article.liked_count}</p>
+      {article.article.publication ? <><p>組織: <a href={"/p/" + article.article.publication.name}>{article.article.publication.name}</a></p></> : null}
+      <a href={`/${article.article.user.username}`}>投稿者: {article.article.user.username}</a><br/>
+      <a href={"https://zenn.dev/"+username+"/articles/"+slug}>zenn.devで見る</a>
     </div>
   </>)
 })

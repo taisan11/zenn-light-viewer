@@ -6,6 +6,9 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "assets": {
+    "directory": "public",
+  },
   "routes": [
     {
       "custom_domain": true,
