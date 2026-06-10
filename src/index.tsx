@@ -61,12 +61,23 @@ app.use(jsxRenderer(({ children }) => {
 
 
 app.get('/', async(c) => {
-  const articles = await client.listArticles({order:"trending"})
+  const trend_tech = await client.listArticles({ order: "trending", "article_type": "tech" })
+  const trend_ideas = await client.listArticles({order:"trending","article_type":"idea"})
   return c.render(<>
     <h1>Zenn viewer</h1>
+    <a href="/new">新規順</a>
     <h2>Trend</h2>
+    <h3>Tech</h3>
     <ul>
-      {articles.articles.map(article => (
+      {trend_tech.articles.map(article => (
+        <li key={article.id}>
+          <a href={article.path}>{article.emoji}|{article.title}</a>
+        </li>
+      ))}
+    </ul>
+    <h3>Idea</h3>
+    <ul>
+      {trend_ideas.articles.map(article => (
         <li key={article.id}>
           <a href={article.path}>{article.emoji}|{article.title}</a>
         </li>
@@ -75,23 +86,75 @@ app.get('/', async(c) => {
   </>)
 })
 
+app.get("/new", async (c) => {
+  const p = c.req.query("p") || "1"
+  const new_ar = await client.listArticles({ order: "new",page: Number(p) })
+  return c.render(<>
+    <h1>Zenn viewer</h1>
+    <a href="/">トレンド順</a>
+    <h2>New</h2>
+    <ul>
+      {new_ar.articles.map(article => (
+        <li key={article.id}>
+          <a href={article.path}>{article.emoji}|{article.title}</a>
+        </li>
+      ))}
+    </ul>
+    <div>
+      {Number(p) > 1 ? <a href={"/new?p=" + (Number(p) - 1)}>前のページ</a> : null}
+      <span> </span>
+      {new_ar.articles.length > 0 ? <a href={"/new?p=" + (Number(p) + 1)}>次のページ</a> : null}
+    </div>
+  </>)
+})
+
 app.get("/p/:name", async(c) => {
   const { name } = c.req.param()
+  const p = c.req.query("p") || "1"
   const publication = await client.getPublication(name)
+  const articles = await client.listArticles({ order: "new", publication_name: name, page: Number(p) })
   return c.render(<>
     <h1>{publication.publication.name}</h1>
     <p>{publication.publication.description}</p>
-    <p><a href={"https://zenn.dev/"+publication.publication.name}>Zenn publication</a></p>
+    <p><a href={"https://zenn.dev/" + publication.publication.name}>Zenn publication</a></p>
+    <h2>Articles</h2>
+    <ul>
+      {articles.articles.map(article => (
+        <li key={article.id}>
+          <a href={article.path}>{article.emoji}|{article.title}</a>
+        </li>
+      ))}
+    </ul>
+    <div>
+      {Number(p) > 1 ? <a href={"/p/" + name + "?p=" + (Number(p) - 1)}>前のページ</a> : null}
+      <span> </span>
+      {articles.articles.length > 0 ? <a href={"/p/" + name + "?p=" + (Number(p) + 1)}>次のページ</a> : null}
+    </div>
   </>)
 })
 
 app.get("/:username", async(c) => {
   const { username } = c.req.param()
+  const p = c.req.query("p") || "1"
   const user = await client.getUser(username)
+  const articles = await client.listArticles({ order: "new", username: username, page: Number(p) })
   return c.render(<>
     <h1>{user.user.name}(@{user.user.username})</h1>
     <p>{user.user.bio}</p>
-    <p><a href={"https://zenn.dev/"+user.user.username}>Zenn profile</a></p>
+    <p><a href={"https://zenn.dev/" + user.user.username}>Zenn profile</a></p>
+    <h2>Articles</h2>
+    <ul>
+      {articles.articles.map(article => (
+        <li key={article.id}>
+          <a href={article.path}>{article.emoji}|{article.title}</a>
+        </li>
+      ))}
+    </ul>
+    <div>
+      {Number(p) > 1 ? <a href={"/" + username + "?p=" + (Number(p) - 1)}>前のページ</a> : null}
+      <span> </span>
+      {articles.articles.length > 0 ? <a href={"/" + username + "?p=" + (Number(p) + 1)}>次のページ</a> : null}
+    </div>
   </>)
 })
 
