@@ -1,6 +1,5 @@
 import { Hono } from 'hono'
 import { ZennClient } from "@taisan11/zenn.js"
-import { bodyLimit } from "hono/body-limit"
 import { cache } from "hono/cache"
 import { etag } from "hono/etag"
 import { jsxRenderer } from "hono/jsx-renderer"
@@ -41,7 +40,6 @@ const mainCSS = `
   }
 `
 
-// app.use(bodyLimit({ maxSize: 1024 * 512 })) // 512KB limit
 app.use(cache({ cacheName:"zlv",cacheControl:"public, max-age=36000" }))
 app.use(etag({weak: true}))
 app.use(secureHeaders({}))
@@ -65,7 +63,9 @@ app.get('/', async(c) => {
   const trend_ideas = await client.listArticles({order:"trending","article_type":"idea"})
   return c.render(<>
     <h1>Zenn viewer</h1>
-    <a href="/new">新規順</a>
+    <a href="/new">新規順</a><br />
+    <a href="/topics">トピックス</a><br />
+    <a href="/search">検索</a><br />
     <h2>Trend</h2>
     <h3>Tech</h3>
     <ul>
@@ -174,6 +174,88 @@ app.get("/:username/articles/:slug", async(c) => {
       {article.article.publication ? <><p>組織: <a href={"/p/" + article.article.publication.name}>{article.article.publication.name}</a></p></> : null}
       <a href={`/${article.article.user.username}`}>投稿者: {article.article.user.username}</a><br/>
       <a href={"https://zenn.dev/"+username+"/articles/"+slug}>zenn.devで見る</a>
+    </div>
+  </>)
+})
+
+app.get("/search", async(c) => {
+  const q = c.req.query("q") || ""
+  if (!q) {
+    return c.render(<>
+      <h1>Search</h1>
+      <form action="/search" method="get">
+        <input type="text" name="q" placeholder="Search query" />
+        <button type="submit">Search</button>
+      </form>
+    </>)
+  }
+  const p = c.req.query("p") || "1"
+  const res = await client.search({ "source": "articles", "q": q, "page": Number(p) })
+  const topics = await client.search({ "source": "topics", "q": q, "page": 1 })
+  return c.render(<>
+    <h1>Search: {q}</h1>
+    <foorm action="/search" method="get">
+      <input type="text" name="q" placeholder="Search query" value={q} />
+      <button type="submit">Search</button>
+    </foorm>
+    {/*横並び*/}
+    <div>
+      {topics.topics!.map(topic => (
+        <a key={topic.id} href={"/topics/" + topic.name}>{topic.name}</a>
+      ))}
+    </div>
+    <ul>
+      {res.articles!.map(article => (
+        <li key={article.id}>
+          <a href={article.path}>{article.emoji}|{article.title}</a>
+        </li>
+      ))}
+    </ul>
+    <div>
+      {Number(p) > 1 ? <a href={"/search?q=" + q + "&p=" + (Number(p) - 1)}>前のページ</a> : null}
+      <span> </span>
+      {res.articles!.length > 0 ? <a href={"/search?q=" + q + "&p=" + (Number(p) + 1)}>次のページ</a> : null}
+    </div>
+  </>)
+})
+
+app.get("/topics", async(c) => {
+  const res = await client.listTopics()
+  return c.render(<>
+    <h1>Topics</h1>
+    <ul>
+      {res.topics.map(topic => (
+        <li key={topic.id}>
+          <a href={"/topics/" + topic.name}>{topic.name}</a>
+        </li>
+      ))}
+    </ul>
+  </>)
+})
+
+app.get("/topics/:topic", async(c) => {
+  const { topic } = c.req.param()
+  const p = c.req.query("p") || "1"
+  const order = c.req.query("order") || "trending"
+  const res = await client.listArticles({ order: order, topicname:topic, page: Number(p) })
+  return c.render(<>
+    <h1>Topic: {topic}</h1>
+    <div>
+      <a href={"/topics/" + topic + "?order=trending&p=" + p}>トレンド順</a>
+      <span> </span>
+      <a href={"/topics/" + topic + "?order=new&p=" + p}>新規順</a>
+    </div>
+    <ul>
+      {res.articles.map(article => (
+        <li key={article.id}>
+          <a href={article.path}>{article.emoji}|{article.title}</a>
+        </li>
+      ))}
+    </ul>
+    <div>
+      {Number(p) > 1 ? <a href={"/topics/" + topic + "?p=" + (Number(p) - 1)}>前のページ</a> : null}
+      <span> </span>
+      {res.articles.length > 0 ? <a href={"/topics/" + topic + "?p=" + (Number(p) + 1)}>次のページ</a> : null}
     </div>
   </>)
 })
