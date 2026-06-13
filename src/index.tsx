@@ -4,9 +4,11 @@ import { cache } from "hono/cache"
 import { etag } from "hono/etag"
 import { jsxRenderer } from "hono/jsx-renderer"
 import { secureHeaders } from "hono/secure-headers"
+import qiita from "./qiita"
 
 const app = new Hono()
 const client = new ZennClient()
+app.route("/qiita", qiita)
 
 // 上が縦画面で下が横画面
 const mainCSS = `
@@ -128,6 +130,7 @@ app.get("/p/:name", async(c) => {
   const { name } = c.req.param()
   const p = c.req.query("p") || "1"
   const publication = await client.getPublication(name)
+  if (publication.notFound) return c.notFound()
   const articles = await client.listArticles({ order: "new", publication_name: name, page: Number(p) })
   return c.render(<>
     <h1>{publication.publication.name}</h1>
@@ -237,6 +240,7 @@ app.get("/:username", async(c) => {
   const { username } = c.req.param()
   const p = c.req.query("p") || "1"
   const user = await client.getUser(username)
+  if (user.notFound) return c.notFound()
   const articles = await client.listArticles({ order: "new", username: username, page: Number(p) })
   return c.render(<>
     <h1>{user.user.name}(@{user.user.username})</h1>
@@ -261,12 +265,20 @@ app.get("/:username", async(c) => {
 app.get("/:username/articles/:slug", async(c) => {
   const { username, slug } = c.req.param()
   const article = await client.getArticle(slug)
+  if (article.notFound) return c.notFound()
   const body = article.article.body_html.replace(
     /(<iframe\b[^>]*?)\ssrc="https:\/\/embed\.zenn\.studio\/[^"]*"([^>]*?\sdata-content="https%3A%2F%2Ftwitter\.com%2F([^%"]+)%2Fstatus%2F(\d+)"[^>]*>)/g,
     '$1 src="https://nitter.net/$3/status/$4/embed"$2'
   )
   return c.render(<>
     <h1 id="a-title">{article.article.emoji}|{article.article.title}</h1>
+    <div>
+      {article.article.topics.map(topic => (
+        <>
+          <a key={topic.id} href={"/topics/" + topic.name}>{topic.name}</a><span> </span>
+        </>
+      ))}
+    </div>
     <div dangerouslySetInnerHTML={{ __html: body }} class="znc" />
     <div class="metas">
       <p>投稿日: {new Date(article.article.published_at).toLocaleString("ja-JP")}</p>
