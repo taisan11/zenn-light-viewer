@@ -27,7 +27,10 @@ const mainCSS = `
     margin-bottom: 5em;
     word-break: auto-phrase;
     text-wrap: pretty;
+    background: #fff;
+    color: #1a1a1a;
   }
+  a { color: #0969da; }
   .metas {
     border: 3px solid gray;
     padding: 1em;
@@ -39,6 +42,24 @@ const mainCSS = `
   #a-title {
     margin-top: 0;
     font-size: 1.3em;
+  }
+  @media (prefers-color-scheme: dark) {
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+    }
+    a { color: #58a6ff; }
+    .metas {
+      border-color: #30363d;
+    }
+    input, button {
+      background: #161b22;
+      color: #e6edf3;
+      border-color: #30363d;
+    }
+  }
+  input[type="text"] {
+    font-size: 16px;
   }
 `
 

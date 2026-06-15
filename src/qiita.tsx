@@ -11,7 +11,10 @@ const mainCSS = `
     max-width: 860px;
     padding: 0 16px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: #fff;
+    color: #1a1a1a;
   }
+  a { color: #0969da; }
   .top-header {
     margin: 24px 0;
   }
@@ -26,7 +29,7 @@ const mainCSS = `
     padding: 6px 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 16px;
     width: 240px;
   }
   .search-form button {
@@ -61,6 +64,40 @@ const mainCSS = `
     background: #f5f5f5;
     border-radius: 4px;
     font-size: 13px;
+  }
+  @media (prefers-color-scheme: dark) {
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+    }
+    a { color: #58a6ff; }
+    .search-form input {
+      background: #161b22;
+      color: #e6edf3;
+      border-color: #30363d;
+    }
+    .search-form button {
+      background: #161b22;
+      color: #e6edf3;
+      border-color: #30363d;
+    }
+    .metas {
+      border-color: #30363d;
+      color: #8b949e;
+    }
+    .api-key-bar {
+      background: #161b22;
+      border-color: #30363d;
+    }
+    input[type="password"] {
+      background: #161b22;
+      color: #e6edf3;
+      border-color: #30363d;
+    }
+  }
+  input[type="text"],
+  input[type="password"] {
+    font-size: 16px;
   }
 `
 
