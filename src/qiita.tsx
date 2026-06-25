@@ -15,16 +15,9 @@ const mainCSS = `
     color: #1a1a1a;
   }
   a { color: #0969da; }
-  .top-header {
-    margin: 24px 0;
-  }
-  .top-header h1 {
-    margin: 0 0 12px;
-    font-size: 1.5em;
-  }
-  .search-form {
-    margin-bottom: 16px;
-  }
+  .top-header { margin: 24px 0; }
+  .top-header h1 { margin: 0 0 12px; font-size: 1.5em; }
+  .search-form { margin-bottom: 16px; }
   .search-form input {
     padding: 6px 10px;
     border: 1px solid #ccc;
@@ -40,11 +33,7 @@ const mainCSS = `
     cursor: pointer;
     font-size: 14px;
   }
-  .pager {
-    display: flex;
-    gap: 8px;
-    margin: 24px 0;
-  }
+  .pager { display: flex; gap: 8px; margin: 24px 0; }
   .metas {
     margin-top: 40px;
     padding: 16px;
@@ -52,9 +41,7 @@ const mainCSS = `
     color: #666;
     font-size: 14px;
   }
-  .metas p {
-    margin: 4px 0;
-  }
+  .metas p { margin: 4px 0; }
   .api-key-bar {
     display: flex;
     align-items: center;
@@ -65,46 +52,59 @@ const mainCSS = `
     border-radius: 4px;
     font-size: 13px;
   }
+  input[type="text"],
+  input[type="password"] { font-size: 16px; }
+
   @media (prefers-color-scheme: dark) {
-    body {
-      background: #0d1117;
-      color: #e6edf3;
-    }
+    :root { color-scheme: dark; }
+    body { background: #0d1117; color: #e6edf3; }
     a { color: #58a6ff; }
-    .search-form input {
-      background: #161b22;
-      color: #e6edf3;
-      border-color: #30363d;
-    }
-    .search-form button {
-      background: #161b22;
-      color: #e6edf3;
-      border-color: #30363d;
-    }
-    .metas {
-      border-color: #30363d;
-      color: #8b949e;
-    }
-    .api-key-bar {
-      background: #161b22;
-      border-color: #30363d;
-    }
+    .search-form input,
+    .search-form button,
     input[type="password"] {
       background: #161b22;
       color: #e6edf3;
       border-color: #30363d;
     }
+    .metas { color: #8b949e; border-color: #30363d; }
+    .api-key-bar { background: #161b22; border-color: #30363d; }
+    blockquote { color: #e6edf3; border-color: #30363d; }
+    .it-MdContent blockquote { color: #e6edf3; border-color: #30363d; }
   }
-  input[type="text"],
-  input[type="password"] {
-    font-size: 16px;
+  html[data-theme="dark"] {
+    color-scheme: dark;
   }
+  html[data-theme="dark"] body {
+    background: #0d1117;
+    color: #e6edf3;
+  }
+  html[data-theme="dark"] a { color: #58a6ff; }
+  html[data-theme="dark"] .search-form input,
+  html[data-theme="dark"] .search-form button,
+  html[data-theme="dark"] input[type="password"] {
+    background: #161b22;
+    color: #e6edf3;
+    border-color: #30363d;
+  }
+  html[data-theme="dark"] .metas { color: #8b949e; border-color: #30363d; }
+  html[data-theme="dark"] blockquote { color: #e6edf3; border-color: #30363d; }
+  html[data-theme="dark"] .it-MdContent blockquote { color: #e6edf3; border-color: #30363d; }
+  html[data-theme="dark"] blockquote { color: #e6edf3; border-color: #30363d; }
+  html[data-theme="dark"] .api-key-bar { background: #161b22; border-color: #30363d; }
 `
 
 app.use(jsxRenderer(({ children }) => {
   return (
     <html>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            var d=document.documentElement;
+            var t=localStorage.getItem('theme');
+            if(t){d.setAttribute('data-theme',t)}
+            else if(matchMedia('(prefers-color-scheme:dark)').matches){d.setAttribute('data-theme','dark')}
+          })();
+        `}} />
         <link rel="stylesheet" href="https://cdn.qiita.com/assets/public/article-6edeacb0ad1dfec20f4e6089828eb303.min.css" />
         <style>{mainCSS}</style>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />

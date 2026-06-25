@@ -10,20 +10,15 @@ const app = new Hono()
 const client = new ZennClient()
 app.route("/qiita", qiita)
 
-// 上が縦画面で下が横画面
 const mainCSS = `
   @media(orientation: portrait) {
-    .metas {
-      font-size: 0.8em;
-    }
+    .metas { font-size: 0.8em; }
   }
   @media(orientation: landscape) {
-    body {
-      margin: 0 30vw;
-    }
+    body { margin: 0 30vw; }
   }
   body {
-    font-size:105%;
+    font-size: 105%;
     margin-bottom: 5em;
     word-break: auto-phrase;
     text-wrap: pretty;
@@ -34,32 +29,36 @@ const mainCSS = `
   .metas {
     border: 3px solid gray;
     padding: 1em;
-    * {
-      margin:0;
-      padding:0
-    }
+    * { margin: 0; padding: 0 }
   }
-  #a-title {
-    margin-top: 0;
-    font-size: 1.3em;
-  }
+  #a-title { margin-top: 0; font-size: 1.3em; }
+  input[type="text"] { font-size: 16px; }
+
   @media (prefers-color-scheme: dark) {
-    body {
-      background: #0d1117;
-      color: #e6edf3;
-    }
+    :root { color-scheme: dark; }
+    body { background: #0d1117; color: #e6edf3; }
     a { color: #58a6ff; }
-    .metas {
-      border-color: #30363d;
-    }
+    .metas { border-color: #30363d; }
     input, button {
       background: #161b22;
       color: #e6edf3;
       border-color: #30363d;
     }
   }
-  input[type="text"] {
-    font-size: 16px;
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
+  html[data-theme="dark"] body {
+    background: #0d1117;
+    color: #e6edf3;
+  }
+  html[data-theme="dark"] a { color: #58a6ff; }
+  html[data-theme="dark"] .metas { border-color: #30363d; }
+  html[data-theme="dark"] input,
+  html[data-theme="dark"] button {
+    background: #161b22;
+    color: #e6edf3;
+    border-color: #30363d;
   }
 `
 
@@ -70,6 +69,14 @@ app.use(jsxRenderer(({ children }) => {
   return (
     <html>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            var d=document.documentElement;
+            var t=localStorage.getItem('theme');
+            if(t){d.setAttribute('data-theme',t)}
+            else if(matchMedia('(prefers-color-scheme:dark)').matches){d.setAttribute('data-theme','dark')}
+          })();
+        `}} />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/zenn-content-css@latest/lib/index.css" />
         <script src="/ae.js"/>
         <style>{mainCSS}</style>
